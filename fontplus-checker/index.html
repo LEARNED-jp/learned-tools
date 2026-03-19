@@ -802,19 +802,32 @@ async function batchCheck() {
   loading.style.display = 'block';
   resultsEl.innerHTML = '';
 
+  const API_URL = 'https://fontplus-checker.curly-forest-8a4b.workers.dev';
+  const BATCH_SIZE = 3;
+  const allResults = [];
+
   try {
-    const API_URL = 'https://fontplus-checker.curly-forest-8a4b.workers.dev';
-    const resp = await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({urls})
-    });
-    const data = await resp.json();
+    for (let i = 0; i < urls.length; i += BATCH_SIZE) {
+      const batch = urls.slice(i, i + BATCH_SIZE);
+      loadingText.textContent = `スキャン中... (${Math.min(i + BATCH_SIZE, urls.length)}/${urls.length})`;
+      const resp = await fetch(API_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({urls: batch})
+      });
+      const data = await resp.json();
+      if (data.results) allResults.push(...data.results);
+    }
     loading.style.display = 'none';
-    renderBatchResults(data.results || []);
+    renderBatchResults(allResults);
   } catch(e) {
     loading.style.display = 'none';
-    resultsEl.innerHTML = '<p style="color:var(--color-danger)">エラー: サーバーに接続できません。</p>';
+    if (allResults.length) {
+      renderBatchResults(allResults);
+      resultsEl.insertAdjacentHTML('afterbegin', '<p style="color:var(--color-warning);margin-bottom:16px">一部のURLでエラーが発生しました。取得できた結果を表示しています。</p>');
+    } else {
+      resultsEl.innerHTML = '<p style="color:var(--color-danger)">エラー: サーバーに接続できません。</p>';
+    }
   }
 }
 
