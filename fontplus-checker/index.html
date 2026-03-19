@@ -749,11 +749,21 @@ setTimeout(function(){ta.remove()},60000);
 document.getElementById('dashScriptPre').textContent = DASHBOARD_SCRIPT;
 
 function copyDashboardScript(btn) {
-  navigator.clipboard.writeText(DASHBOARD_SCRIPT).then(() => {
+  function onCopied() {
     btn.classList.add('copied');
     btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> コピーしました';
     setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> コピー'; }, 2000);
-  });
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(DASHBOARD_SCRIPT).then(onCopied).catch(fallbackCopy);
+  } else { fallbackCopy(); }
+  function fallbackCopy() {
+    var ta = document.createElement('textarea');
+    ta.value = DASHBOARD_SCRIPT; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand('copy'); onCopied(); } catch(e) { alert('コピーできませんでした。スクリプト欄を手動で選択してコピーしてください。'); }
+    ta.remove();
+  }
 }
 
 async function batchCheck() {
