@@ -742,7 +742,7 @@ ta.value=text;ta.style.position='fixed';ta.style.top='10px';ta.style.left='10px'
 document.body.appendChild(ta);
 ta.focus();ta.select();
 try{document.execCommand('copy');
-alert(urls.length+'件のプロジェクトURLをコピーしました。\\nFont Inspector に貼り付けてください。\\n\\nテキストボックスは閉じて大丈夫です。');
+alert(urls.length+'件のプロジェクトURLをコピーしました。\\nFONTPLUS フォント使用プロジェクト検索 に貼り付けてください。\\n\\nテキストボックスは閉じて大丈夫です。');
 }catch(e){alert('自動コピーできませんでした。\\n表示されたテキストボックスからCtrl+A → Ctrl+Cでコピーしてください。');}
 setTimeout(function(){ta.remove()},60000);
 })();`;
