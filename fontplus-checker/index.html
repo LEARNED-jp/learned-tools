@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FONTPLUS フォント使用プロジェクト検索 | Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --color-bg: #ffffff;
+  --color-surface: #f8f9fa;
+  --color-border: #e8eaed;
+  --color-text: #1a1a1a;
+  --color-text-secondary: #5f6368;
+  --color-text-tertiary: #9aa0a6;
+  --color-accent: #1a73e8;
+  --color-accent-light: #e8f0fe;
+  --color-warning: #e8710a;
+  --color-warning-light: #fef3e6;
+  --color-warning-border: #f5c77e;
+  --color-success: #0d904f;
+  --color-success-light: #e6f4ea;
+  --color-hero-start: #0a0a0a;
+  --color-hero-end: #1a1a2e;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --transition: 0.2s ease;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hero + URL Input */
+.hero {
+  background: linear-gradient(160deg, var(--color-hero-start) 0%, var(--color-hero-end) 100%);
+  color: #fff;
+  padding: 72px 0 56px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 32px;
+  position: relative;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 20px;
+}
+.hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: #34d399; }
+.hero h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+.hero p { font-size: 15px; color: rgba(255,255,255,0.6); max-width: 560px; line-height: 1.8; margin-bottom: 32px; }
+
+/* URL Input (in hero) */
+.url-form {
+  display: flex;
+  gap: 12px;
+  max-width: 640px;
+}
+.url-input-wrap {
+  flex: 1;
+  position: relative;
+}
+.url-input-wrap input {
+  width: 100%;
+  padding: 14px 20px 14px 44px;
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  transition: var(--transition);
+  backdrop-filter: blur(8px);
+}
+.url-input-wrap input::placeholder { color: rgba(255,255,255,0.35); }
+.url-input-wrap input:focus { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.1); }
+.url-input-wrap .input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,0.35);
+  pointer-events: none;
+}
+.btn-scan {
+  padding: 14px 32px;
+  background: #fff;
+  color: var(--color-text);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-scan:hover { background: #f0f0f0; }
+.btn-scan:disabled { opacity: 0.5; cursor: not-allowed; }
+.url-options {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+.url-options label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+}
+.url-options input[type="checkbox"] {
+  accent-color: #34d399;
+  width: 14px;
+  height: 14px;
+}
+
+/* Loading */
+.loading-bar {
+  display: none;
+  margin-top: 20px;
+}
+.loading-bar.active { display: block; }
+.loading-track {
+  height: 3px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.loading-fill {
+  height: 100%;
+  background: #34d399;
+  border-radius: 2px;
+  animation: loading 1.8s ease-in-out infinite;
+  width: 40%;
+}
+@keyframes loading {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+.loading-text {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 8px;
+}
+.scanned-pages-hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.scanned-pages-hero .page-tag {
+  background: rgba(52,211,153,0.15);
+  color: #34d399;
+  border: 1px solid rgba(52,211,153,0.25);
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Error */
+.error-msg {
+  display: none;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: var(--radius-sm);
+  color: #fca5a5;
+  font-size: 13px;
+}
+.error-msg.visible { display: block; }
+
+/* Container */
+.container { max-width: 960px; margin: 0 auto; padding: 0 32px; }
+
+/* Notice bar */
+.notice-bar {
+  background: var(--color-warning-light);
+  border-bottom: 1px solid var(--color-warning-border);
+  padding: 10px 0;
+}
+.notice-bar .container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--color-warning);
+  font-weight: 500;
+}
+
+/* Results */
+.results-section { padding: 48px 0 80px; display: none; }
+.results-section.visible { display: block; }
+
+.summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 40px; }
+.summary-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.summary-card .label {
+  font-size: 12px; font-weight: 500; color: var(--color-text-secondary);
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;
+}
+.summary-card .value { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; }
+.summary-card.warning .value { color: var(--color-warning); }
+.summary-card.success .value { color: var(--color-success); }
+
+.results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.results-header h2 { font-size: 18px; font-weight: 600; }
+.filter-tabs {
+  display: flex; background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); padding: 3px; gap: 2px;
+}
+.filter-tab {
+  padding: 6px 16px; border: none; background: transparent; border-radius: 6px;
+  font-size: 13px; font-weight: 500; color: var(--color-text-secondary);
+  cursor: pointer; transition: var(--transition); font-family: inherit;
+}
+.filter-tab.active { background: #fff; color: var(--color-text); box-shadow: var(--shadow-sm); }
+.filter-tab:hover:not(.active) { color: var(--color-text); }
+
+.font-group {
+  border: 1px solid var(--color-border); border-radius: var(--radius);
+  margin-bottom: 12px; overflow: hidden; transition: var(--transition);
+}
+.font-group:hover { border-color: #d0d5dd; }
+.font-group-header {
+  display: flex; align-items: center; gap: 16px; padding: 20px 24px;
+  cursor: pointer; user-select: none; transition: background var(--transition);
+}
+.font-group-header:hover { background: var(--color-surface); }
+.font-group-toggle {
+  width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+  color: var(--color-text-tertiary); transition: transform var(--transition); flex-shrink: 0;
+}
+.font-group.open .font-group-toggle { transform: rotate(90deg); }
+.font-group-info { flex: 1; min-width: 0; }
+.font-group-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.font-group-meta { font-size: 12px; color: var(--color-text-tertiary); }
+.font-group-meta span + span::before { content: '\00b7'; margin: 0 6px; }
+.badge {
+  display: inline-flex; align-items: center; padding: 3px 10px;
+  border-radius: 100px; font-size: 11px; font-weight: 600; flex-shrink: 0;
+}
+.badge-warning { background: var(--color-warning-light); color: var(--color-warning); border: 1px solid var(--color-warning-border); }
+.badge-success { background: var(--color-success-light); color: var(--color-success); }
+.element-count { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); flex-shrink: 0; }
+
+.replacement-box {
+  margin: 0 24px 16px; background: var(--color-warning-light);
+  border: 1px solid var(--color-warning-border); border-radius: var(--radius-sm); padding: 14px 18px;
+}
+.replacement-box .replacement-label {
+  font-size: 11px; font-weight: 600; color: var(--color-warning);
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;
+}
+.replacement-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.replacement-chip {
+  display: inline-flex; padding: 6px 14px; background: #fff;
+  border: 1px solid var(--color-warning-border); border-radius: 6px;
+  font-size: 13px; font-weight: 500; color: var(--color-text);
+}
+.replacement-chip.primary { background: var(--color-warning); color: #fff; border-color: var(--color-warning); font-weight: 600; }
+.no-replacement { font-size: 13px; color: var(--color-text-secondary); font-style: italic; }
+
+.font-group-body { display: none; border-top: 1px solid var(--color-border); }
+.font-group.open .font-group-body { display: block; }
+.element-table { width: 100%; border-collapse: collapse; }
+.element-table th {
+  text-align: left; font-size: 11px; font-weight: 600; color: var(--color-text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 24px;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+}
+.element-table td { padding: 10px 24px; font-size: 13px; border-bottom: 1px solid var(--color-border); color: var(--color-text-secondary); }
+.element-table tr:last-child td { border-bottom: none; }
+.element-table .el-name { font-weight: 500; color: var(--color-text); }
+.element-table .el-preview { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-text-tertiary); font-size: 12px; }
+.element-table .el-page { color: var(--color-accent); font-weight: 500; font-size: 12px; }
+.element-table .el-size { font-family: 'SF Mono', monospace; font-size: 12px; }
+.element-table .el-source { font-size: 11px; color: var(--color-text-tertiary); }
+
+.empty-state { text-align: center; padding: 60px 20px; color: var(--color-text-tertiary); }
+.empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.3; }
+.empty-state p { font-size: 14px; }
+
+/* Advanced mode toggle */
+.advanced-section {
+  border-top: 1px solid var(--color-border);
+  padding: 48px 0;
+}
+.advanced-toggle {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  font-size: 14px; font-weight: 500; color: var(--color-text-secondary);
+  margin-bottom: 20px; user-select: none;
+}
+.advanced-toggle:hover { color: var(--color-text); }
+.advanced-toggle svg { transition: transform var(--transition); }
+.advanced-toggle.open svg { transform: rotate(90deg); }
+.advanced-body { display: none; }
+.advanced-toggle.open + .advanced-body { display: block; }
+
+.script-box { background: #1e1e2e; border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
+.script-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.script-header span { font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 500; }
+.btn-copy {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px; padding: 6px 14px; color: rgba(255,255,255,0.7);
+  font-size: 12px; font-weight: 500; cursor: pointer; transition: var(--transition); font-family: inherit;
+}
+.btn-copy:hover { background: rgba(255,255,255,0.14); color: #fff; }
+.btn-copy.copied { background: rgba(52,211,153,0.15); border-color: rgba(52,211,153,0.3); color: #34d399; }
+.script-code { padding: 20px; overflow-x: auto; max-height: 120px; transition: max-height 0.3s ease; }
+.script-code.expanded { max-height: 600px; }
+.script-code pre { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; line-height: 1.6; color: #cdd6f4; white-space: pre; margin: 0; }
+.btn-expand {
+  display: block; width: 100%; padding: 8px; background: rgba(255,255,255,0.02);
+  border: none; border-top: 1px solid rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.35); font-size: 12px; cursor: pointer; font-family: inherit;
+}
+.btn-expand:hover { color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.04); }
+
+.textarea-wrap textarea {
+  width: 100%; min-height: 120px; padding: 16px 20px;
+  border: 2px solid var(--color-border); border-radius: var(--radius);
+  font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; line-height: 1.6;
+  color: var(--color-text); background: var(--color-bg); resize: vertical; outline: none;
+  transition: border-color var(--transition);
+}
+.textarea-wrap textarea::placeholder { color: var(--color-text-tertiary); font-family: 'Inter', 'Noto Sans JP', sans-serif; }
+.textarea-wrap textarea:focus { border-color: var(--color-accent); }
+.input-actions { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px;
+  background: var(--color-text); color: #fff; border: none; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: var(--transition); font-family: inherit;
+}
+.btn-primary:hover { background: #333; }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px;
+  background: transparent; color: var(--color-text-secondary); border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: var(--transition); font-family: inherit;
+}
+.btn-secondary:hover { background: var(--color-surface); color: var(--color-text); }
+
+/* Server notice */
+.server-notice {
+  display: none;
+  padding: 16px 20px;
+  background: var(--color-accent-light);
+  border: 1px solid #b6d4fe;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--color-accent);
+  margin-top: 16px;
+  line-height: 1.7;
+}
+.server-notice code {
+  background: rgba(26,115,232,0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'SF Mono', monospace;
+  font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero { padding: 48px 0 40px; }
+  .hero h1 { font-size: 24px; }
+  .url-form { flex-direction: column; }
+  .summary-cards { grid-template-columns: 1fr; }
+  .filter-tabs { flex-wrap: wrap; }
+  .font-group-header { padding: 16px; }
+  .element-table th, .element-table td { padding: 8px 16px; }
+  .replacement-box { margin: 0 16px 12px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <h1>FONTPLUS フォント使用プロジェクト検索</h1>
+    <p>Studioの全プロジェクトの中から、FONTPLUSフォントを使っているものを特定します。使用中のフォント名と代替フォント候補を一覧で確認できます。</p>
+  </div>
+</header>
+
+<section style="padding:48px 0 80px">
+  <div class="container">
+    <h2 style="font-size:18px;font-weight:600;margin-bottom:20px">使い方</h2>
+    <div style="margin-bottom:32px;">
+      <div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start">
+        <span style="background:var(--color-text);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0">1</span>
+        <p style="font-size:13px;color:var(--color-text-secondary);line-height:1.7"><a href="https://app.studio.design" target="_blank" style="color:var(--color-accent);text-decoration:none;font-weight:500">app.studio.design</a> を開き、プロジェクト一覧が見える状態にします。</p>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start">
+        <span style="background:var(--color-text);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0">2</span>
+        <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.7">
+          <p><strong style="color:var(--color-text)">F12キー</strong>を押して開発者ツールを開き、上部の<strong style="color:var(--color-text)">「Console」</strong>タブをクリックします。</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start">
+        <span style="background:var(--color-text);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0">3</span>
+        <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.7">
+          <p>Consoleに「貼り付けを許可してください」という警告が表示されます。<strong style="color:var(--color-text)">キーボードから直接</strong> <code style="background:var(--color-surface);border:1px solid var(--color-border);padding:2px 8px;border-radius:4px;font-size:12px">allow pasting</code> <strong style="color:var(--color-text)">と手入力</strong>してEnterを押してください。</p>
+          <p style="font-size:12px;color:var(--color-text-tertiary);margin-top:4px">※ コピー&ペーストではなく、必ずキーボードで直接入力してください。初回のみ必要です。</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start">
+        <span style="background:var(--color-text);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0">4</span>
+        <p style="font-size:13px;color:var(--color-text-secondary);line-height:1.7">下の<strong style="color:var(--color-text)">「コピー」ボタン</strong>でスクリプトをコピーし、Consoleに<strong style="color:var(--color-text)">貼り付けてEnter</strong>で実行します。</p>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="background:var(--color-text);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0">5</span>
+        <p style="font-size:13px;color:var(--color-text-secondary);line-height:1.7">取得されたURLリストを下の入力欄に貼り付けて<strong style="color:var(--color-text)">「一括チェック」</strong>を押してください。</p>
+      </div>
+    </div>
+
+    <div class="script-box">
+      <div class="script-header">
+        <span>JavaScript &mdash; Studioダッシュボードで実行</span>
+        <button class="btn-copy" onclick="copyDashboardScript(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          コピー
+        </button>
+      </div>
+      <div class="script-code" id="dashScriptCode" style="max-height:80px"><pre id="dashScriptPre"></pre></div>
+    </div>
+    <p style="font-size:12px;color:var(--color-text-tertiary);margin:12px 0 24px;">※ スクリプトで取得できない場合は、公開済みサイトのURLを1行に1つずつ直接入力しても使えます。</p>
+
+    <h2 style="font-size:18px;font-weight:600;margin-bottom:12px">プロジェクトURL一覧</h2>
+    <div class="textarea-wrap">
+      <textarea id="batchInput" placeholder="https://example.co.jp&#10;https://example.jp&#10;https://example.ne.jp" style="min-height:120px"></textarea>
+    </div>
+    <div class="input-actions">
+      <button class="btn-primary" onclick="batchCheck()">一括チェック</button>
+    </div>
+    <div id="batchLoading" style="display:none;margin-top:16px;">
+      <div class="loading-track" style="height:3px;background:var(--color-border);border-radius:2px;overflow:hidden"><div class="loading-fill" style="height:100%;background:var(--color-accent);border-radius:2px;animation:loading 1.8s ease-in-out infinite;width:40%"></div></div>
+      <div id="batchLoadingText" style="font-size:13px;color:var(--color-text-secondary);margin-top:8px">スキャン中...</div>
+    </div>
+    <div id="batchResults" style="margin-top:24px"></div>
+  </div>
+</section>
+
+
+<script>
+// ===== FONTPLUS Replacement Data (with English aliases + replacement weight info) =====
+const FONTPLUS_REPLACEMENTS = [
+  {name:"あかかね",en:["Akakane"],alt:["プフ ピクニック","ハルクラフト"]},
+  {name:"アニト",en:["Anito"],alt:["ソフトゴシック"]},
+  {name:"アニト インライン",en:["Anito Inline"],alt:["新丸ゴ"]},
+  {name:"アニト レリーフ",en:["Anito Relief"],alt:["新丸ゴ"]},
+  {name:"アンチックセザンヌ",en:["Antique Cezanne","Antick Cezanne"],alt:["アンチックAN+","アンチックAN1+"]},
+  {name:"あおかね",en:["Aokane"],alt:["翠流アトラス"]},
+  {name:"あられ",en:["Arare"],alt:["A1ゴシック"]},
+  {name:"アーク",en:["Arc"],alt:["ほなみ+","はるひ学園"]},
+  {name:"ベビポップ",en:["Baby Pop","BabyPop"],alt:["ぽってり"]},
+  {name:"Between 2",en:[],alt:["Open Sans","Lato","Cabin"]},
+  {name:"ぶどう",en:["Budou"],alt:["ほなみ+"]},
+  {name:"カラット",en:["Carat"],alt:[]},
+  {name:"セザンヌ",en:["Cezanne"],alt:["ゴシックMB101","見出ゴMB31","見出ゴMB1"]},
+  {name:"セザンヌ墨東",en:["Cezanne Bokutou"],alt:["墨東N+"]},
+  {name:"キアロ",en:["Chiaro"],alt:["フォーク"]},
+  {name:"コメット",en:["Comet"],alt:[]},
+  {name:"コミックミステリ",en:["Comic Mystery"],alt:["隷書101"]},
+  {name:"コミックレゲエ",en:["Comic Reggae"],alt:["Reggaee One"]},
+  {name:"クックハンド",en:["Cook Hand"],alt:["白妙"]},
+  {name:"カッコウ",en:["Cuckoo"],alt:[]},
+  {name:"DIN Next",en:[],alt:["Barlow"]},
+  {name:"ドットゴシック12",en:["Dot Gothic 12","DotGothic12"],alt:["DotGothic 16"]},
+  {name:"ドットゴシック16",en:["Dot Gothic 16","DotGothic16"],alt:["DotGothic 16"]},
+  {name:"ドット明朝12",en:["Dot Mincho 12","DotMincho12"],alt:["DotGothic 16"]},
+  {name:"ドット明朝16",en:["Dot Mincho 16","DotMincho16"],alt:["DotGothic 16"]},
+  {name:"Futura",en:[],alt:["Jost"]},
+  {name:"Futura Oblique",en:[],alt:["Jost"]},
+  {name:"学参丸ゴ",en:["Gakusan Maru Go"],alt:["G-OTF 新丸ゴ"]},
+  {name:"Gill Sans Nova",en:[],alt:["Josefin Sans"]},
+  {name:"ゴスペル",en:["Gospel"],alt:[]},
+  {name:"グレコ",en:["Greco"],alt:["正楷書CB1"]},
+  {name:"はるなごみ",en:["Harunagomi"],alt:["ぽってり","はるひ学園"]},
+  {name:"Helvetica Now Display",en:["Helvetica Now"],alt:["Inter"]},
+  {name:"豊隷",en:["Horei"],alt:["隷書101"]},
+  {name:"ハミング",en:["Humming"],alt:["丸フォーク"]},
+  {name:"ITC Bodoni Seventytwo",en:[],alt:["Bodoni Moda"]},
+  {name:"Joanna Nova",en:[],alt:["Role Slab Text Pro"]},
+  {name:"角隷",en:["Kakurei"],alt:["陸隷"]},
+  {name:"桔梗A",en:["Kikyo A","Bellflower A"],alt:["フォーク"]},
+  {name:"桔梗B",en:["Kikyo B","Bellflower B"],alt:["フォーク"]},
+  {name:"クレー",en:["Klee"],alt:["Klee One"]},
+  {name:"古今江戸",en:["Kokon Edo"],alt:["ひげ文字"]},
+  {name:"古今髭",en:["Kokon Hige"],alt:[]},
+  {name:"くろかね",en:["Kurokane"],alt:[]},
+  {name:"ライラ",en:["Lila"],alt:[]},
+  {name:"マカロニ",en:["Macaroni"],alt:["リュウミン"]},
+  {name:"マティス",en:["Matisse"],alt:["リュウミン","ヒラギノ明朝"]},
+  {name:"マティスえれがんと",en:["Matisse Elegant"],alt:["翠流デコロマン"]},
+  {name:"マティスはつひやまと",en:["Matisse Hatsuhi"],alt:["ほなみ","リュウミン"]},
+  {name:"マティスみのりやまと",en:["Matisse Minori"],alt:["ほなみ","リュウミン"]},
+  {name:"マティスV",en:["Matisse V"],alt:["リュウミン 小がな","リュウミン"]},
+  {name:"マティスわかばやまと",en:["Matisse Wakaba"],alt:["ほなみ","リュウミン"]},
+  {name:"モード明朝A",en:["Mode Mincho A"],alt:["カクミン"]},
+  {name:"モード明朝Aラージ",en:["Mode Mincho A Large"],alt:["カクミン"]},
+  {name:"モード明朝B",en:["Mode Mincho B"],alt:["カクミン"]},
+  {name:"モード明朝Bラージ",en:["Mode Mincho B Large"],alt:["カクミン"]},
+  {name:"Monotype Baskerville eText",en:[],alt:["Baskervville"]},
+  {name:"ミステリ",en:["Mystery"],alt:["隷書101"]},
+  {name:"奈",en:["Na","Nara"],alt:["竹"]},
+  {name:"ニューセザンヌ",en:["New Cezanne","NewCezanne"],alt:["こぶりなゴシック"]},
+  {name:"ニューシネマA",en:["New Cinema A","NewCinema A"],alt:["シネマレター"]},
+  {name:"ニューシネマB",en:["New Cinema B","NewCinema B"],alt:["シネマレター"]},
+  {name:"ニューグレコ",en:["New Greco","NewGreco"],alt:["新正楷書CBSK1"]},
+  {name:"ニューロダン",en:["New Rodin","NewRodin"],alt:["新ゴ"]},
+  {name:"Optima nova",en:["Optima Nova"],alt:["Cetra Display"]},
+  {name:"パルラムネ",en:["Pal Ramune"],alt:[]},
+  {name:"パルレトロン",en:["Pal Retron"],alt:[]},
+  {name:"パール",en:["Pearl"],alt:[]},
+  {name:"Popフューリー",en:["Pop Fury"],alt:["イカヅチ"]},
+  {name:"Popハッピネス",en:["Pop Happiness"],alt:["プフ ポッケ"]},
+  {name:"Popジョイ",en:["Pop Joy"],alt:[]},
+  {name:"ラグラン",en:["Raglan"],alt:[]},
+  {name:"ラグランパンチ",en:["Raglan Punch"],alt:[]},
+  {name:"レイルウェイ",en:["Railway"],alt:["Train One"]},
+  {name:"ランパート",en:["Rampart"],alt:["Rampart One"]},
+  {name:"ランパート TL",en:["Rampart TL"],alt:["新ゴ"]},
+  {name:"ロックンロール",en:["RocknRoll","Rock n Roll"],alt:["RocknRoll One"]},
+  {name:"Rockwell",en:[],alt:["Salvo Serif","Zilla Slab"]},
+  {name:"ロダン",en:["Rodin"],alt:["UD新ゴNT","秀英角ゴシック金"]},
+  {name:"ロダン墨東",en:["Rodin Bokutou"],alt:["墨東N+"]},
+  {name:"ロダン カミーユ",en:["Rodin Camille"],alt:["カクミン"]},
+  {name:"ロダン カトレア",en:["Rodin Cattleya"],alt:["新ゴ"]},
+  {name:"ロダン ハッピー",en:["Rodin Happy"],alt:["ハッピーN+"]},
+  {name:"ロダン ひまわり",en:["Rodin Himawari"],alt:["白妙"]},
+  {name:"ロダン マリア",en:["Rodin Maria"],alt:["新ゴ"]},
+  {name:"ロダン NTLG",en:["Rodin NTLG"],alt:["新ゴ"]},
+  {name:"ロダン ローズ",en:["Rodin Rose"],alt:[]},
+  {name:"ロダン わんぱく",en:["Rodin Wanpaku"],alt:["わんぱくゴシックN"]},
+  {name:"ロウディ",en:["Rowdy"],alt:["新ゴ","Dela Gothic One"]},
+  {name:"スーラ",en:["Seurat"],alt:["新丸ゴ"]},
+  {name:"スーラ キャピー",en:["Seurat Capie"],alt:["キャピーN+"]},
+  {name:"シャドウ",en:["Shadow"],alt:["新丸ゴ"]},
+  {name:"シャドウ TL",en:["Shadow TL"],alt:["新丸ゴ"]},
+  {name:"清御隷書体",en:["Seigoreisho"],alt:["隷書101"]},
+  {name:"Shorai Sans",en:["Shorai"],alt:["新ゴ"]},
+  {name:"スキップ",en:["Skip"],alt:["フォーク"]},
+  {name:"スランプ",en:["Slump"],alt:["新丸ゴ"]},
+  {name:"スティールワーク",en:["Steelwork"],alt:["新丸ゴ"]},
+  {name:"ステッキ",en:["Stick"],alt:["Stick"]},
+  {name:"たづがね角ゴシック",en:["Tazugane Gothic"],alt:["Noto Sans Japanese"]},
+  {name:"テロップ明朝",en:["Telop Mincho"],alt:["黎ミンY20"]},
+  {name:"てんとう虫",en:["Tentoumushi"],alt:["トーキング","シネマレター"]},
+  {name:"つばめ",en:["Tsubame"],alt:["ココン"]},
+  {name:"筑紫A見出し明朝",en:["Tsukushi A Midashi Mincho","Tsukushi A Display Mincho"],alt:["秀英初号明朝 撰"]},
+  {name:"筑紫Aオールド明朝",en:["Tsukushi A Old Mincho"],alt:[]},
+  {name:"筑紫A丸ゴシック",en:["Tsukushi A Maru Gothic","Tsukushi A Round Gothic","TsukuARdGothic"],alt:["Zen Maru Gothic"]},
+  {name:"筑紫Aヴィンテージ明朝 L",en:["Tsukushi A Vintage Mincho L"],alt:[]},
+  {name:"筑紫Aヴィンテージ明朝 S",en:["Tsukushi A Vintage Mincho S"],alt:[]},
+  {name:"筑紫AMゴシック L",en:["Tsukushi AM Gothic L","TsukuAMGothic"],alt:["秀英角ゴシック銀"]},
+  {name:"筑紫AMゴシック S",en:["Tsukushi AM Gothic S"],alt:["秀英角ゴシック銀"]},
+  {name:"筑紫AN A丸ゴシック L",en:["Tsukushi AN A Maru Gothic L"],alt:["Zen Maru Gothic"]},
+  {name:"筑紫AN A丸ゴシック S",en:["Tsukushi AN A Maru Gothic S"],alt:["Zen Maru Gothic"]},
+  {name:"筑紫AN B丸ゴシック L",en:["Tsukushi AN B Maru Gothic L"],alt:["Tsukimi Rounded","Zen Maru Gothic"]},
+  {name:"筑紫AN B丸ゴシック S",en:["Tsukushi AN B Maru Gothic S"],alt:["Tsukimi Rounded","Zen Maru Gothic"]},
+  {name:"筑紫AN C丸ゴシック L",en:["Tsukushi AN C Maru Gothic L"],alt:["Tsukimi Rounded","Zen Maru Gothic"]},
+  {name:"筑紫AN C丸ゴシック S",en:["Tsukushi AN C Maru Gothic S"],alt:["Tsukimi Rounded","Zen Maru Gothic"]},
+  {name:"筑紫アンティークLゴシック",en:["Tsukushi Antique L Gothic"],alt:["見出ゴMB31"]},
+  {name:"筑紫アンティークL明朝",en:["Tsukushi Antique L Mincho"],alt:["秀英明朝"]},
+  {name:"筑紫アンティークSゴシック",en:["Tsukushi Antique S Gothic"],alt:["見出ゴMB31"]},
+  {name:"筑紫アンティークS明朝",en:["Tsukushi Antique S Mincho"],alt:["秀英明朝"]},
+  {name:"筑紫B見出し明朝",en:["Tsukushi B Midashi Mincho","Tsukushi B Display Mincho"],alt:["秀英初号明朝 撰"]},
+  {name:"筑紫B明朝",en:["Tsukushi B Mincho","TsukuBMincho"],alt:["秀英明朝"]},
+  {name:"筑紫Bオールド明朝",en:["Tsukushi B Old Mincho"],alt:[]},
+  {name:"筑紫B丸ゴシック",en:["Tsukushi B Maru Gothic","Tsukushi B Round Gothic","TsukuBRdGothic"],alt:["Tsukimi Rounded","Zen Maru Gothic"]},
+  {name:"筑紫Bヴィンテージ明朝 L",en:["Tsukushi B Vintage Mincho L"],alt:[]},
+  {name:"筑紫Bヴィンテージ明朝 S",en:["Tsukushi B Vintage Mincho S"],alt:[]},
+  {name:"筑紫C見出し明朝",en:["Tsukushi C Midashi Mincho","Tsukushi C Display Mincho"],alt:["秀英初号明朝 撰"]},
+  {name:"筑紫Cオールド明朝",en:["Tsukushi C Old Mincho"],alt:[]},
+  {name:"筑紫Cヴィンテージ明朝 L",en:["Tsukushi C Vintage Mincho L"],alt:[]},
+  {name:"筑紫Cヴィンテージ明朝 S",en:["Tsukushi C Vintage Mincho S"],alt:[]},
+  {name:"筑紫ゴシック",en:["Tsukushi Gothic","TsukuGo"],alt:["ゴシックMB101","Roゴシック新がな"]},
+  {name:"筑紫明朝",en:["Tsukushi Mincho","TsukuMin"],alt:["秀英明朝"]},
+  {name:"筑紫新聞明朝",en:["Tsukushi Shinbun Mincho","Tsukushi News Mincho"],alt:["UD黎ミン"]},
+  {name:"筑紫オールドゴシック",en:["Tsukushi Old Gothic","TsukuOldGothic"],alt:["ゴシックMB101"]},
+  {name:"筑紫オールド明朝",en:["Tsukushi Old Mincho","TsukuOldMincho"],alt:[]},
+  {name:"筑紫Q明朝 L",en:["Tsukushi Q Mincho L"],alt:["かもめ龍爪"]},
+  {name:"筑紫Q明朝 S",en:["Tsukushi Q Mincho S"],alt:["かもめ龍爪"]},
+  {name:"筑紫RM明朝",en:["Tsukushi RM Mincho"],alt:[]},
+  {name:"UD角ゴ C60",en:["UD Kaku Go C60","UD Gothic C60"],alt:["UD新ゴコンデ60"]},
+  {name:"UD角ゴ C70",en:["UD Kaku Go C70","UD Gothic C70"],alt:["UD新ゴコンデ70"]},
+  {name:"UD角ゴ C80",en:["UD Kaku Go C80","UD Gothic C80"],alt:["UD新ゴコンデ80"]}
+];
+
+// 代替フォントのウェイト情報
+const REPLACEMENT_WEIGHTS = {
+  // TypeSquare (Morisawa)
+  "新ゴ":"L,R,M,DB,B,E,H,U","新丸ゴ":"L,R,M,DB,B,E,H,U","リュウミン":"L,R,M,DB,B,E,H,U",
+  "ゴシックMB101":"L,R,M,DB,B,E,H,U","見出ゴMB31":"E","見出ゴMB1":"B",
+  "カクミン":"L,R,M,B","こぶりなゴシック":"W3,W6","秀英明朝":"L,M,B",
+  "秀英角ゴシック金":"L,B","秀英角ゴシック銀":"L,R,M,B","UD新ゴNT":"L,R,M,DB,B,E,H",
+  "フォーク":"L,R,M,DB,B","丸フォーク":"L,R,M,DB,B","ほなみ+":"R",
+  "白妙":"R","はるひ学園":"R","隷書101":"R","正楷書CB1":"R","陸隷":"R",
+  "墨東N+":"R","UD黎ミン":"L,R,M,DB,B,E,H","黎ミンY20":"R,B",
+  "秀英初号明朝 撰":"B","ヒラギノ明朝":"W2,W3,W5,W6,W7,W8",
+  "UD新ゴコンデ60":"L,R,M,DB,B,E","UD新ゴコンデ70":"L,R,M,DB,B,E","UD新ゴコンデ80":"L,R,M,DB,B,E",
+  // Google Fonts
+  "Inter":"100-900","Jost":"100-900","Barlow":"100-900","Josefin Sans":"100-700",
+  "Klee One":"400,600","Zen Maru Gothic":"300,400,500,700,900","DotGothic 16":"400",
+  "Reggaee One":"400","RocknRoll One":"400","Rampart One":"400","Stick":"400",
+  "Train One":"400","Dela Gothic One":"400","Bodoni Moda":"400-900","Baskervville":"400",
+  "Tsukimi Rounded":"300-600","Noto Sans Japanese":"100-900",
+  "Open Sans":"300-800","Lato":"100-900","Cabin":"400-700",
+  "Salvo Serif":"400,700","Zilla Slab":"300-700",
+};
+
+function normalizeFontName(name) {
+  return name.replace(/^FOT-/i,'').replace(/\s*(Std|Pro|StdN|ProN|Pr6N|Pr6|Pr5)\s*$/i,'').replace(/[®™]/g,'').replace(/\s+/g,' ').trim();
+}
+
+function findFontPlusMatch(resolved) {
+  if (!resolved) return null;
+  const parts = resolved.split(',').map(s => normalizeFontName(s.replace(/['"]/g,'').trim()));
+  // Check each part of the font-family against Japanese names AND English aliases
+  for (const p of parts) {
+    const pLower = p.toLowerCase();
+    for (const fp of FONTPLUS_REPLACEMENTS) {
+      // Match Japanese name
+      if (p === fp.name || p.includes(fp.name)) return fp;
+      // Match English aliases (case-insensitive, substring)
+      for (const en of (fp.en || [])) {
+        const enLower = en.toLowerCase();
+        if (pLower === enLower || pLower.includes(enLower) || enLower.includes(pLower)) return fp;
+      }
+    }
+  }
+  // Also try the full resolved string
+  const norm = normalizeFontName(resolved);
+  const normLower = norm.toLowerCase();
+  for (const fp of FONTPLUS_REPLACEMENTS) {
+    if (norm === fp.name || norm.includes(fp.name)) return fp;
+    for (const en of (fp.en || [])) {
+      if (normLower === en.toLowerCase() || normLower.includes(en.toLowerCase())) return fp;
+    }
+  }
+  return null;
+}
+
+// ===== Dashboard Script (project URL extraction) =====
+const DASHBOARD_SCRIPT = `(function(){
+var appEl;
+for(var el of document.querySelectorAll('*')){if(el.__vue_app__){appEl=el;break;}}
+if(!appEl){alert('Studioダッシュボードが見つかりません。\\napp.studio.design を開いてください。');return;}
+var store=appEl.__vue_app__.config.globalProperties.$store;
+var urls=[];
+function cleanDomain(d){return d?d.replace('https://','').replace('http://',''):''}
+try{
+  var state=store.state;
+  for(var key in state){
+    var mod=state[key];
+    if(!mod||typeof mod!=='object')continue;
+    for(var k2 in mod){
+      var val=mod[k2];
+      if(Array.isArray(val)){
+        val.forEach(function(item){
+          if(item&&typeof item==='object'){
+            var domain=item.customDomain||item.domain||item.publishedUrl||'';
+            var subdomain=item.subdomain||item.slug||'';
+            var name=item.name||item.title||'';
+            if(domain){urls.push({name:name,url:'https://'+cleanDomain(domain)});}
+            else if(subdomain){urls.push({name:name,url:'https://'+subdomain+'.studio.site'});}
+          }
+        });
+      }
+      if(val&&typeof val==='object'&&!Array.isArray(val)){
+        for(var k3 in val){
+          var v2=val[k3];
+          if(v2&&typeof v2==='object'&&(v2.customDomain||v2.subdomain||v2.domain)){
+            var d=v2.customDomain||v2.domain||'';
+            var s=v2.subdomain||v2.slug||'';
+            var n=v2.name||v2.title||k3;
+            if(d)urls.push({name:n,url:'https://'+cleanDomain(d)});
+            else if(s)urls.push({name:n,url:'https://'+s+'.studio.site'});
+          }
+        }
+      }
+    }
+  }
+}catch(e){}
+if(urls.length===0){
+  document.querySelectorAll('a[href*="/s/"]').forEach(function(a){
+    var name=a.textContent.trim().substring(0,50);
+    var href=a.getAttribute('href');
+    if(name&&href)urls.push({name:name,url:href});
+  });
+}
+if(urls.length===0){alert('プロジェクトURLを自動取得できませんでした。\\n公開済みサイトのURLを手動で入力してください。');return;}
+var text=urls.map(function(u){return u.url}).join('\\n');
+var ta=document.createElement('textarea');
+ta.value=text;ta.style.position='fixed';ta.style.top='10px';ta.style.left='10px';ta.style.width='500px';ta.style.height='300px';ta.style.zIndex='999999';ta.style.fontSize='13px';ta.style.padding='12px';ta.style.background='#fff';ta.style.border='2px solid #1a73e8';ta.style.borderRadius='8px';ta.style.boxShadow='0 4px 24px rgba(0,0,0,0.3)';
+document.body.appendChild(ta);
+ta.focus();ta.select();
+try{document.execCommand('copy');
+alert(urls.length+'件のプロジェクトURLをコピーしました。\\nFont Inspector に貼り付けてください。\\n\\nテキストボックスは閉じて大丈夫です。');
+}catch(e){alert('自動コピーできませんでした。\\n表示されたテキストボックスからCtrl+A → Ctrl+Cでコピーしてください。');}
+setTimeout(function(){ta.remove()},60000);
+})();`;
+document.getElementById('dashScriptPre').textContent = DASHBOARD_SCRIPT;
+
+function copyDashboardScript(btn) {
+  navigator.clipboard.writeText(DASHBOARD_SCRIPT).then(() => {
+    btn.classList.add('copied');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> コピーしました';
+    setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> コピー'; }, 2000);
+  });
+}
+
+async function batchCheck() {
+  const input = document.getElementById('batchInput').value.trim();
+  if (!input) return;
+  const urls = input.split('\n').map(u => u.trim()).filter(u => u && u.startsWith('http'));
+  if (!urls.length) { alert('有効なURLが見つかりません。https:// から始まるURLを1行に1つ入力してください。'); return; }
+
+  const loading = document.getElementById('batchLoading');
+  const loadingText = document.getElementById('batchLoadingText');
+  const resultsEl = document.getElementById('batchResults');
+  loading.style.display = 'block';
+  resultsEl.innerHTML = '';
+
+  try {
+    const API_URL = 'https://fontplus-checker.learned-jp.workers.dev';
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({urls})
+    });
+    const data = await resp.json();
+    loading.style.display = 'none';
+    renderBatchResults(data.results || []);
+  } catch(e) {
+    loading.style.display = 'none';
+    resultsEl.innerHTML = '<p style="color:var(--color-danger)">エラー: サーバーに接続できません。</p>';
+  }
+}
+
+function renderBatchResults(results) {
+  const el = document.getElementById('batchResults');
+  const affected = results.filter(r => r.hasFontPlus);
+  const safe = results.filter(r => !r.hasFontPlus && !r.error);
+  const errors = results.filter(r => r.error);
+
+  let html = `<div style="margin-bottom:24px;display:flex;gap:16px;flex-wrap:wrap">
+    <div style="padding:16px 24px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);flex:1;min-width:140px">
+      <div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">チェック済み</div>
+      <div style="font-size:28px;font-weight:700">${results.length}</div>
+    </div>
+    <div style="padding:16px 24px;background:var(--color-warning-light);border:1px solid var(--color-warning-border);border-radius:var(--radius-sm);flex:1;min-width:140px">
+      <div style="font-size:12px;font-weight:500;color:var(--color-warning);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">要対応</div>
+      <div style="font-size:28px;font-weight:700;color:var(--color-warning)">${affected.length}</div>
+    </div>
+    <div style="padding:16px 24px;background:var(--color-success-light);border:1px solid var(--color-border);border-radius:var(--radius-sm);flex:1;min-width:140px">
+      <div style="font-size:12px;font-weight:500;color:var(--color-success);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">対応不要</div>
+      <div style="font-size:28px;font-weight:700;color:var(--color-success)">${safe.length}</div>
+    </div>
+  </div>`;
+
+  // Legend
+  html += `<div style="margin-bottom:20px;font-size:12px;color:var(--color-text-tertiary)">
+    <span style="font-weight:500">代替フォントのベンダー・ファウンダリーの見分け方:</span>
+    <span style="color:#0d904f;font-weight:600;margin-left:12px">&#9632; TypeSquare</span>
+    <span style="color:#1a73e8;font-weight:600;margin-left:12px">&#9632; Google Fonts</span>
+  </div>`;
+
+  if (affected.length) {
+    html += '<h3 style="font-size:16px;font-weight:600;margin-bottom:16px;color:var(--color-warning)">FONTPLUSフォント使用あり</h3>';
+    html += affected.map(r => {
+      const tableRows = r.fontplusFonts.map(f => {
+        const match = findFontPlusMatch(f.name);
+        const jpName = match ? match.name : f.name;
+        const displayName = f.name !== jpName ? `${esc(f.name)} (${esc(jpName)})` : esc(f.name);
+        const alts = match ? match.alt : [];
+        const altCells = [0,1,2].map(i => {
+          if (i < alts.length) {
+            const color = fontSourceColor(alts[i]);
+            return `<td style="padding:8px 12px;font-size:13px;font-weight:500;color:${color}">${esc(alts[i])}</td>`;
+          }
+          return '<td style="padding:8px 12px;font-size:13px;color:var(--color-text-tertiary)">-</td>';
+        }).join('');
+        return `<tr style="border-bottom:1px solid var(--color-border)">
+          <td style="padding:8px 12px;font-size:13px;font-weight:600">${displayName}</td>
+          ${altCells}
+        </tr>`;
+      }).join('');
+
+      return `<div style="border:1px solid var(--color-warning-border);border-radius:var(--radius-sm);margin-bottom:12px;overflow:hidden;background:#fff">
+        <div style="padding:14px 16px;background:var(--color-warning-light);border-bottom:1px solid var(--color-warning-border)">
+          <div style="font-size:14px;font-weight:600">${esc(r.title || r.url)}</div>
+          <div style="font-size:12px;color:var(--color-text-tertiary);margin-top:2px">${esc(r.url)}</div>
+        </div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="border-bottom:1px solid var(--color-border);background:var(--color-surface)">
+            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.05em">使用中のフォント</th>
+            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.05em">候補1</th>
+            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.05em">候補2</th>
+            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.05em">候補3</th>
+          </tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>`;
+    }).join('');
+  }
+
+  if (safe.length) {
+    html += '<h3 style="font-size:16px;font-weight:600;margin:24px 0 12px;color:var(--color-success)">対応不要</h3>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px">' + safe.map(r =>
+      `<span style="padding:6px 14px;background:var(--color-success-light);border-radius:6px;font-size:13px;color:var(--color-success);font-weight:500">${esc(r.title || r.url)}</span>`
+    ).join('') + '</div>';
+  }
+
+  if (errors.length) {
+    html += '<h3 style="font-size:14px;font-weight:600;margin:24px 0 8px;color:var(--color-text-tertiary)">取得できなかったサイト</h3>';
+    html += errors.map(r =>
+      `<div style="font-size:13px;color:var(--color-text-tertiary);margin-bottom:4px">${esc(r.url)}: ${esc(r.error)}</div>`
+    ).join('');
+  }
+
+  el.innerHTML = html;
+}
+
+// ===== Font source classification =====
+const TYPESQUARE_FONTS = new Set([
+  "新ゴ","新丸ゴ","リュウミン","ゴシックMB101","見出ゴMB31","見出ゴMB1","カクミン","こぶりなゴシック",
+  "秀英明朝","秀英角ゴシック金","秀英角ゴシック銀","UD新ゴNT","フォーク","丸フォーク","ほなみ+","ほなみ",
+  "白妙","はるひ学園","隷書101","正楷書CB1","陸隷","墨東N+","UD黎ミン","黎ミンY20","秀英初号明朝 撰",
+  "ヒラギノ明朝","UD新ゴコンデ60","UD新ゴコンデ70","UD新ゴコンデ80","新正楷書CBSK1","G-OTF 新丸ゴ",
+  "翠流アトラス","翠流デコロマン","ソフトゴシック","ぽってり","A1ゴシック","アンチックAN+","アンチックAN1+",
+  "プフ ピクニック","ハルクラフト","イカヅチ","プフ ポッケ","わんぱくゴシックN","ハッピーN+","キャピーN+",
+  "ひげ文字","竹","シネマレター","トーキング","ココン","Roゴシック新がな","かもめ龍爪","Cetra Display",
+  "Role Slab Text Pro","リュウミン 小がな","UD新ゴ"
+]);
+const GOOGLE_FONTS = new Set([
+  "Inter","Jost","Barlow","Josefin Sans","Klee One","Zen Maru Gothic","DotGothic 16","Reggaee One",
+  "RocknRoll One","Rampart One","Stick","Train One","Dela Gothic One","Bodoni Moda","Baskervville",
+  "Tsukimi Rounded","Noto Sans Japanese","Noto Sans JP","Open Sans","Lato","Cabin","Salvo Serif",
+  "Zilla Slab"
+]);
+function fontSourceClass(name) {
+  if (TYPESQUARE_FONTS.has(name)) return 'ts';
+  if (GOOGLE_FONTS.has(name)) return 'gf';
+  return '';
+}
+function fontSourceColor(name) {
+  if (TYPESQUARE_FONTS.has(name)) return '#0d904f';
+  if (GOOGLE_FONTS.has(name)) return '#1a73e8';
+  return 'var(--color-text)';
+}
+
+function esc(s) { return escapeHtml(s); }
+function escapeHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+
+</script>
+</body>
+</html>
